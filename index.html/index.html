@@ -1,1 +1,133 @@
 <!DOCTYPE html> 
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title> Student Finance Tracker </title>
+
+        <link rel="stylesheet" href="styles/styles.css">
+
+        <style>
+
+        </style>
+
+    </head>
+
+    <body>
+        <a href="#main" class="skip-link">Skip to main content</a>
+
+        <header>
+            <h1> Student Finance Tracker </h1>
+            <nav aria-label="Main Navigation">
+                <ul>
+                    <li><a href="#dashboard">Dashboard</a></li>
+                    <li><a href="#records">Records</a></li>
+                    <li><a href="#add-form">Add</a></li>
+                    <li><a href="#settings">Settings</a></li>
+                    <li><a href="#about">About</a></li>
+                </ul>
+            </nav>
+        </header>
+
+        <main id="main">
+            
+            <section id="dashboard" aria-labelledby="dashboard-title" >
+                <h2 id="dashboard-title"> Dashboard </h2>
+                <div class="cards">
+                    <div class="card">
+                        <h3>Total Spent</h3>
+                        <p id="total-spent">$0.00</p>
+                    </div>
+                    <div class="card">
+                        <h3>Top Category</h3>
+                        <p id="top-category">N/A</p>
+                </div>
+
+                <div class="card">
+                    <h3>Last 7 Days</h3>
+                    <p id="trend"> 0 entries </p>
+                </div>
+                </div>
+            </section>
+
+            <section id="records" aria-labelledby="records-title" >
+                <h2 id="records-title"> Records </h2>
+
+                <div class="search-bar">
+                  <label for="search">Search (Regular Expressions allowed):</label>
+                  <input type="text" id="search" placeholder="e.g. coffee|book|fee">
+                  <button id="case-toggle">Aa</button>
+                </div>
+
+                <table id="records-table">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th>Amount</th>
+                            <th>Category</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Records will be dynamically inserted here -->
+                    </tbody>
+                </table>
+            </section>
+
+            <section id="add-form" aria-labelledby="add-title" >
+                <h2 id="add-title">Add Transaction</h2>
+                <form>
+                    <label for="title"> Description:</label>
+                    <input type="text" id="title" placeholder="e.g. Lunch at Cafeteria">
+
+                    <label for="amount"> Amount:</label>
+                    <input type="number" id="amount" placeholder="e.g. 12.50" step="0.01">
+
+                    <label for="category"> Category:</label>
+                    <select id="category">
+                        <option> Food</option>
+                        <option> Books</option>
+                        <option> Transport</option>
+                        <option> Entertainment</option>
+                        <option> Fees</option>
+                        <option> Others</option>
+                    </select>
+
+                    <label for="date"> Date:</label>
+                    <input type="date" id="date">
+
+                    <button type="submit" id="save-btn"> Save </button>
+                    <button type="reset"> Reset </button>
+                </form>
+            </section>
+
+            <section id="settings" aria-labelledby="settings-title" >
+                <h2 id="settings-title">Settings</h2>
+                <form>
+                    <label for="base-currency"> Base Currency:</label>
+                    <input type="text" id="base-currency" placeholder="e.g. USD, EUR"> value="USD, RWF, KES">
+
+                    <label for="rate1"> Exchange Rate 1:</label>
+                    <input type="number" id="rate1" placeholder="e.g. 1.2" value="1.00">
+
+                    <label for="rate2"> Exchange Rate 2:</label>
+                    <input type="number" id="rate2" placeholder="e.g. 0.9" value="1.00">
+                    </form>
+            </section>
+
+            <section id="about" aria-labelledby="about-title" >
+                <h2 id="about-title">About</h2>
+                <p> Student Finance Tracker is a simple web application designed to help students tracks expenses, budgets, and categories.</p>
+                <p> Made with love by Erin :) <a href="https://github.com/erin-leyian" target="_blank">My Github Profile</a></p>
+                <p> Contact: <a href="mailto:e.leyian@example.com">e.leyian@alustudent.com</a></p>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2025 Student Finance Tracker. All rights reserved.</p>
+        </footer>
+
+        <script src="scripts/app.js" type="module"></script>
+    </body>
+</html>
