@@ -5,7 +5,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title> Student Finance Tracker </title>
 
-        <link rel="stylesheet" href="styles/styles.css">
+        <link rel="stylesheet" href="/styles/styles.css">
 
         <style>
 
@@ -18,16 +18,15 @@
 
         <header>
             <h1> Student Finance Tracker </h1>
+        </header>
             <nav aria-label="Main Navigation">
                 <ul>
-                    <li><a href="#dashboard">Dashboard</a></li>
-                    <li><a href="#records">Records</a></li>
-                    <li><a href="#add-form">Add</a></li>
-                    <li><a href="#settings">Settings</a></li>
-                    <li><a href="#about">About</a></li>
+                    <li><a href="index.html">Dashboard</a></li>
+                    <li><a href="add.html">Add Expenses</a></li>
+                    <li><a href="records.html">Records</a></li>
+                    <li><a href="about.html">About</a></li>
                 </ul>
             </nav>
-        </header>
 
         <main id="main">
             
@@ -59,7 +58,7 @@
                   <button id="case-toggle">Aa</button>
                 </div>
 
-                <table id="records-table">
+                <table class="records-table">
                     <thead>
                         <tr>
                             <th>Description</th>
@@ -77,7 +76,7 @@
 
             <section id="add-form" aria-labelledby="add-title" >
                 <h2 id="add-title">Add Transaction</h2>
-                <form>
+                <form id="transaction-form">
                     <label for="title"> Description:</label>
                     <input type="text" id="title" placeholder="e.g. Lunch at Cafeteria">
 

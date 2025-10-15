@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Student Finance Tracker</title>
+    <link rel="stylesheet" href="styles/styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Student Finance Tracker</h1>
+      <nav aria-label="Main Navigation">
+        <ul>
+          <li><a href="index.html">Dashboard</a></li>
+          <li><a href="add.html">Add</a></li>
+          <li><a href="reports.html">Reports</a></li>
+          <li><a href="about.html">About</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    
+<main>
+  <section id="add-transaction" aria-labelledby="add-title">
+    <h2 id="add-title">Add Transaction</h2>
+    <form id="add-form">
+      <label for="description">Description:</label>
+      <input type="text" id="description" required />
+
+      <label for="amount">Amount:</label>
+      <input type="number" id="amount" required />
+
+      <label for="category">Category:</label>
+      <select id="category">
+        <option>Food</option>
+        <option>Books</option>
+        <option>Transport</option>
+        <option>Entertainment</option>
+        <option>Fees</option>
+        <option>Other</option>
+      </select>
+
+      <label for="date">Date:</label>
+      <input type="date" id="date" required />
+
+      <button type="submit">Add Transaction</button>
+    </form>
+  </section>
+</main>
+
+    <footer>
+      <p>&copy; 2025 Student Finance Tracker. All rights reserved.</p>
+    </footer>
+
+    <script src="scripts/app.js" type="module"></script>
+  </body>
+</html>
