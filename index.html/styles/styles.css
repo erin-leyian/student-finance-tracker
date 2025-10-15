@@ -1,0 +1,111 @@
+*  {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    background-color: white;
+    color: #333333;
+    display: flex;
+    min-height: 100vh;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 20px;
+}
+
+:root {
+    --pink: #FADADD;
+    --gray-light: #F1F1F1;
+    --text-dark: #333333;
+}
+
+header {
+    width: 100%;
+    max-width: 800px;
+    background-color: var(--pink);
+    color: var(--text-dark);
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 30px;
+    border-radius: 20px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+header h1 {
+    font-size: 1.8rem;
+    letter-spacing: 1px;
+} 
+
+.dashboard {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 800px;
+    margin-bottom: 30px;
+}
+
+.card {
+    background-color: var(--gray-light);
+    border-radius: 15px;
+    padding: 20px;
+    width: 240px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.5)
+    transition : transform 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+}
+
+.card h3 {
+    color: var(--text-dark);
+    margin-bottom: 30px;
+    font-size: 1.2rem;
+}
+
+form {
+    background-color: var(--gray-light);
+    padding: 20px;
+    border-radius: 15px;
+    max-width: 800px;
+    width: 100%;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 30px;
+}
+
+form input,
+form select,
+form button {
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    font-size: 1rem;
+}
+
+form input,
+form select {
+    flex: 1 1 150px;
+    background-color: #fff;
+}
+
+form button {
+    background-color: var(--pink);
+    color: var(--text-dark);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+form button: hover {
+    background-color: #f8cbd4;
+    transform: translateY(-2px);
+
+}
