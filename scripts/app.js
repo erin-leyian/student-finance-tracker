@@ -67,6 +67,80 @@ document.addEventListener("DOMContentLoaded", () => {
 
     renderChart(records);
   }
+   
+   // --- Budget Feature ---
+const budgetForm = document.getElementById("budget-form");
+const budgetInput = document.getElementById("budget-amount");
+const budgetValue = document.getElementById("budget-value");
+const spentValue = document.getElementById("spent-value");
+const remainingValue = document.getElementById("remaining-value");
+
+let budget = Number(localStorage.getItem("budget") || 0);
+
+function renderBudget() {
+  if (!budgetValue || !spentValue || !remainingValue) return; // Exit if elements don't exist
+  
+  const records = getRecords();
+  const spent = records.reduce((sum, r) => sum + Number(r.amount || 0), 0);
+  const remaining = budget - spent;
+
+  budgetValue.textContent = `$${budget.toFixed(2)}`;
+  spentValue.textContent = `$${spent.toFixed(2)}`;
+  remainingValue.textContent = `$${remaining.toFixed(2)}`;
+
+  if (remaining < 0) {
+    remainingValue.style.color = "red";
+  } else {
+    remainingValue.style.color = "green";
+  }
+}
+
+if (budgetForm && budgetInput) {
+budgetForm.addEventListener("submit", (e) => {
+  e.preventDefault();
+  budget = Number(budgetInput.value);
+  localStorage.setItem("budget", budget);
+  renderBudget();
+  budgetInput.value = "";
+});
+
+// Call it during page refresh
+renderBudget();
+}
+
+// ==========================
+// SETTINGS FUNCTIONALITY
+// ==========================
+
+// Select input fields
+// Select input fields
+const baseCurrencyInput = document.getElementById("base-currency");
+const rate1Input = document.getElementById("rate1");
+const rate2Input = document.getElementById("rate2");
+
+// Only run if settings elements exist
+if (baseCurrencyInput && rate1Input && rate2Input) {
+  // Load settings from localStorage on startup
+  const savedSettings = JSON.parse(localStorage.getItem("settings"));
+  if (savedSettings) {
+    baseCurrencyInput.value = savedSettings.baseCurrency || "";
+    rate1Input.value = savedSettings.rate1 || "";
+    rate2Input.value = savedSettings.rate2 || "";
+  }
+
+  // Save settings when user changes any input
+  [baseCurrencyInput, rate1Input, rate2Input].forEach(input => {
+    input.addEventListener("change", () => {
+      const settings = {
+        baseCurrency: baseCurrencyInput.value.trim(),
+        rate1: parseFloat(rate1Input.value) || 1,
+        rate2: parseFloat(rate2Input.value) || 1,
+      };
+      localStorage.setItem("settings", JSON.stringify(settings));
+      alert("✅ Settings saved successfully!");
+    });
+  });
+}
 
   function renderChart(records) {
     const chartContainer = document.getElementById("chart");
@@ -114,6 +188,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function refreshAll() {
     renderRecords();
     renderSummary();
+    renderBudget();
   }
 
   // Initial render
@@ -191,11 +266,16 @@ form.addEventListener("submit", (e) => {
   e.preventDefault();
   console.log("🔍 Form submitted - validating all fields...");
 
-console.log("Form values → desc:", descInput?.value, 
-            "| amt:", amountInput?.value, 
-            "| cat:", categoryInput?.value, 
-            "| date:", dateInput?.value);
-
+  console.log(
+    "Form values → desc:",
+    descInput?.value,
+    "| amt:",
+    amountInput?.value,
+    "| cat:",
+    categoryInput?.value,
+    "| date:",
+    dateInput?.value
+  );
 
   const validDesc = validateField(descInput, DESC_PATTERN, descMsg, "Invalid description.");
   const validAmt = validateField(amountInput, AMOUNT_PATTERN, amountMsg, "Invalid amount.");
@@ -203,10 +283,8 @@ console.log("Form values → desc:", descInput?.value,
   const validDate = validateField(dateInput, DATE_PATTERN, dateMsg, "Invalid date.");
 
   console.log(
-  `✅ Validation check → Desc: ${validDesc}, Amt: ${validAmt}, Cat: ${validCat}, Date: ${validDate}`
-);
-
-
+    `✅ Validation check → Desc: ${validDesc}, Amt: ${validAmt}, Cat: ${validCat}, Date: ${validDate}`
+  );
 
   // If any field is invalid, show the correct error message and stop form submission
   if (!validDesc || !validAmt || !validCat || !validDate) {
@@ -231,7 +309,7 @@ console.log("Form values → desc:", descInput?.value,
     date: dateInput.value,
   };
 
-  console.log("🆕 Adding record:", newRecord);
+  console.log("🧩 Saving new record:", newRecord);
 
   addRecord(newRecord);
   refreshAll();
@@ -246,4 +324,5 @@ console.log("Form values → desc:", descInput?.value,
   // Clear success message after 3 seconds
   setTimeout(() => (formStatus.textContent = ""), 3000);
 });
+
 });

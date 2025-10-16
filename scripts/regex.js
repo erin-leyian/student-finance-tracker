@@ -31,9 +31,7 @@ export const DUPLICATE_WORD_PATTERN = /\b(\w+)\s+\1\b/i;
 export function validateField(input, regex, messageSpan, msg) {
   if (!input || !messageSpan) return false;
 
-  const value = input.value.trim();
-
-  // Empty check
+  const value = input.value?.trim();
   if (!value) {
     messageSpan.textContent = "This field is required.";
     messageSpan.style.color = "red";
@@ -41,27 +39,32 @@ export function validateField(input, regex, messageSpan, msg) {
     return false;
   }
 
-  // Pattern validation
-  if (!regex.test(value)) {
+  // Check regex pattern
+  const isValid = regex.test(value);
+  if (!isValid) {
     messageSpan.textContent = msg;
     messageSpan.style.color = "red";
     input.style.borderColor = "red";
     return false;
   }
 
-  // Extra: check invalid calendar dates (like 2025-02-30)
+  // ✅ Special case for dates: ensure real calendar date
   if (input.id === "date") {
-  const [year, month, day] = value.split("-").map(Number);
-  const date = new Date(`${year}-${String(month).padStart(2,"0")}-${String(day).padStart(2,"0")}T00:00`);
-  if (isNaN(date.getTime())) {
-    messageSpan.textContent = "Enter a valid calendar date.";
-    messageSpan.style.color = "red";
-    input.style.borderColor = "red";
-    return false;
+    const [year, month, day] = value.split("-").map(Number);
+    const date = new Date(year, month - 1, day);
+    if (
+      date.getFullYear() !== year ||
+      date.getMonth() + 1 !== month ||
+      date.getDate() !== day
+    ) {
+      messageSpan.textContent = "Enter a valid calendar date.";
+      messageSpan.style.color = "red";
+      input.style.borderColor = "red";
+      return false;
+    }
   }
-}
 
-  // ✅ If valid
+  // ✅ Passed all checks
   messageSpan.textContent = "";
   input.style.borderColor = "green";
   return true;

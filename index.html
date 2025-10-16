@@ -33,6 +33,21 @@
 
             <div id="status" role="status" aria-live="polite" class="visually-hidden"></div>
 
+            <section id="budget-section">
+                 <h2>My Budget</h2>
+                <form id="budget-form">
+               <label for="budget-amount">Set Monthly Budget:</label>
+                <input type="number" id="budget-amount" placeholder="e.g. 500" step="0.01">
+                <button type="submit">Save Budget</button>
+                </form>
+
+              <div id="budget-summary">
+                <p>Budget: <span id="budget-value">$0.00</span></p>
+                <p> Spent: <span id="spent-value">$0.00</span></p>
+                <p> Remaining: <span id="remaining-value">$0.00</span></p>
+              </div>
+  </div>
+</section>
 
             <section class="dashboard" aria-labelledby="dashboard-title" >
                 <h2 id="dashboard-title"> Dashboard </h2>
@@ -44,13 +59,20 @@
                     <div class="card">
                         <h3>Top Category</h3>
                         <p id="top-category">N/A</p>
-                </div>
+                 </div>
 
-                <div class="card">
+                 <div class="card">
                     <h3>Last 7 Days</h3>
                     <p id="trend"> 0 entries </p>
+                 </div>
                 </div>
-                </div>
+
+                <div style="text-align: center; margin-top: 20px;">
+        <a href="add.html" style="display: inline-block; padding: 12px 24px; background: #4CAF50; color: white; text-decoration: none; border-radius: 5px; font-weight: bold;">
+             Add New Transaction
+        </a>
+       </div>
+
             </section>
 
             <section id="records" aria-labelledby="records-title" >
@@ -78,60 +100,51 @@
                 </table>
             </section>
 
-            <section id="add-form" aria-labelledby="add-title" >
-                <h2 id="add-title">Add Transaction</h2>
-                <form id="transaction-form">
-                    <label for="description"> Description:</label>
-                    <input type="text" id="description" placeholder="e.g. Lunch at Cafeteria">
 
-                    <label for="amount"> Amount:</label>
-                    <input type="number" id="amount" placeholder="e.g. 12.50" step="0.01">
 
-                    <label for="category"> Category:</label>
-                    <select id="category">
-                        <option> Food</option>
-                        <option> Books</option>
-                        <option> Transport</option>
-                        <option> Entertainment</option>
-                        <option> Fees</option>
-                        <option> Others</option>
-                    </select>
+<section id="settings" aria-labelledby="settings-title">
+  <h2 id="settings-title">Settings</h2>
+  <form id="settings-form">
+    <label for="base-currency">Base Currency:</label>
+    <input
+      type="text"
+      id="base-currency"
+      placeholder="e.g. USD, RWF, KES"
+    />
 
-                    <label for="date"> Date:</label>
-                    <input type="date" id="date">
+    <label for="rate1">Exchange Rate 1:</label>
+    <input type="number" id="rate1" placeholder="e.g. 1.2" step="0.01" />
 
-                    <button type="submit" id="save-btn"> Save </button>
-                    <button type="reset"> Reset </button>
-                </form>
-            </section>
+    <label for="rate2">Exchange Rate 2:</label>
+    <input type="number" id="rate2" placeholder="e.g. 0.9" step="0.01" />
 
-            <section id="settings" aria-labelledby="settings-title" >
-                <h2 id="settings-title">Settings</h2>
-                <form>
-                    <label for="base-currency"> Base Currency:</label>
-                    <input type="text" id="base-currency" placeholder="e.g. USD, EUR" value="USD, RWF, KES">
+    <button type="submit" id="save-settings">Save Settings</button>
+  </form>
+  <p id="settings-status"></p>
+</section>
 
-                    <label for="rate1"> Exchange Rate 1:</label>
-                    <input type="number" id="rate1" placeholder="e.g. 1.2" value="1.00">
+<section id="about" aria-labelledby="about-title">
+  <h2 id="about-title">About</h2>
+  <p>
+    Student Finance Tracker is a simple web application designed to help
+    students track expenses, budgets, and categories.
+  </p>
+  <p>
+    Made with love by Erin :) 
+    <a href="https://github.com/erin-leyian" target="_blank"
+      >My GitHub Profile</a
+    >
+  </p>
+  <p>
+    Contact:
+    <a href="mailto:e.leyian@example.com">e.leyian@alustudent.com</a>
+  </p>
+</section>
 
-                    <label for="rate2"> Exchange Rate 2:</label>
-                    <input type="number" id="rate2" placeholder="e.g. 0.9" value="1.00">
-                    </form>
-            </section>
+<footer>
+  <p>&copy; 2025 Student Finance Tracker. All rights reserved.</p>
+</footer>
 
-            <section id="about" aria-labelledby="about-title" >
-                <h2 id="about-title">About</h2>
-                <p> Student Finance Tracker is a simple web application designed to help students track expenses, budgets, and categories.</p>
-                <p> Made with love by Erin :) <a href="https://github.com/erin-leyian" target="_blank">My Github Profile</a></p>
-                <p> Contact: <a href="mailto:e.leyian@example.com">e.leyian@alustudent.com</a></p>
-            </section>
-        </main>
-
-        <footer>
-            <p>&copy; 2025 Student Finance Tracker. All rights reserved.</p>
-        </footer>
-
-        <script src="scripts/app.js" type="module"></script>
+<script src="scripts/app.js" type="module"></script>
     </body>
 </html>
- 
