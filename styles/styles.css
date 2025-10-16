@@ -326,6 +326,7 @@ footer {
 }
 
 #about a:hover {
-  color:
+  color:var(--pink);
+}
 
 

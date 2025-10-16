@@ -23,12 +23,14 @@
 <main>
   <section id="add-transaction" aria-labelledby="add-title">
     <h2 id="add-title">Add Transaction</h2>
-    <form id="add-form">
+    <form id="transaction-form" novalidate>
       <label for="description">Description:</label>
       <input type="text" id="description" required />
+      <small id="description-msg" class="field-msg" aria-live="polite"></small>
 
       <label for="amount">Amount:</label>
       <input type="number" id="amount" required />
+      <small id="amount-msg" class="field-msg" aria-live="polite"></small>
 
       <label for="category">Category:</label>
       <select id="category">
@@ -39,9 +41,13 @@
         <option>Fees</option>
         <option>Other</option>
       </select>
+      <small id="category-msg" class="field-msg" aria-live="polite"></small>
 
       <label for="date">Date:</label>
       <input type="date" id="date" required />
+      <small id="date-msg" class="field-msg" aria-live="polite"></small>
+
+  <div id="form-status" role="status" aria-live="polite" class="visually-hidden"></div>
 
       <button type="submit">Add Transaction</button>
     </form>
@@ -52,6 +58,6 @@
       <p>&copy; 2025 Student Finance Tracker. All rights reserved.</p>
     </footer>
 
-    <script src="scripts/app.js" type="module"></script>
+    <script type="module" src="./scripts/app.js"></script>
   </body>
 </html>

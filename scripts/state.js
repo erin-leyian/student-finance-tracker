@@ -1,6 +1,6 @@
 import { loadData, saveData }  from "./storage.js";
 
-let records = loadData();
+let records = loadData() || [] ;
 
 export function getRecords() {
     return records;
@@ -9,7 +9,6 @@ export function getRecords() {
 export function addRecord(record) {
     record.id = `rec_${Date.now()}`;
     record.createdAt = new Date().toISOString();
-    records.updatedAt = record.createdAt;
 
     records.push(record);
     saveData(records);

@@ -28,8 +28,49 @@ function filterLast7Days(records) {
   return records.filter(record => record.date && new Date(record.date) >= sevenDaysAgo);
 }
 
+function renderTable(records) {
+  const tbody = document.querySelector(".records-table tbody");
+
+  if (!tbody) {
+    console.error("Table body not found!");
+    return;
+  }
+
+  tbody.innerHTML = ""; // clear existing rows
+
+  if (records.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5">No records found.</td></tr>`;
+    return;
+  }
+
+  records.forEach(record => {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${record.description}</td>
+      <td>$${Number(record.amount).toFixed(2)}</td>
+      <td>${record.category}</td>
+      <td>${record.date}</td>
+      <td><button class="delete-btn" data-id="${record.id}">Delete</button></td>
+    `;
+    tbody.appendChild(row);
+  });
+
+  tbody.addEventListener("click", (e) => {
+    if (e.target.classList.contains("delete-btn")) {
+      const id = e.target.dataset.id;
+      const all = getStoredData(); // get latest data
+      const updated = all.filter((r) => r.id !== id);
+      localStorage.setItem("studentfinancestracker-data", JSON.stringify(updated));
+      renderSummary(); // refresh after delete
+    }
+  });
+}
+
+
 function renderSummary() {
   const records = getStoredData();
+
+    renderTable(records);
 
   // Total spent
   const total = calculateTotal(records);
