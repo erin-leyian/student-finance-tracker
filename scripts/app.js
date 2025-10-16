@@ -3,13 +3,33 @@ import {
   DESC_PATTERN, 
   AMOUNT_PATTERN, 
   DATE_PATTERN,
-  validateField 
+  validateField,
+  compileRegex,
+  highlightMatches
 } from "./regex.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   console.log("App loaded");
 
   const tableBody = document.querySelector(".records-table tbody");
+  const searchInput = document.getElementById("search");
+  const caseToggleBtn = document.getElementById("case-toggle");
+
+  let caseSensitive = false;
+
+  function updateCaseToggleUI() {
+    if (!caseToggleBtn) return;
+    caseToggleBtn.setAttribute("aria-pressed", String(caseSensitive));
+    caseToggleBtn.classList.toggle("active", caseSensitive);
+    caseToggleBtn.title = caseSensitive ? "Case sensitive search" : "Case insensitive search";
+  }
+
+  function getActiveRegex() {
+    const raw = searchInput?.value?.trim() || "";
+    if (!raw) return null;
+    const flags = caseSensitive ? "" : "i";
+    return compileRegex(raw, flags);
+  }
 
   // Escape user input to prevent HTML injection
   function escapeHtml(str) {
@@ -22,25 +42,40 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // --- RENDER FUNCTIONS --- //
-  function renderRecords() {
+  function renderRecords(activeRegex) {
     const records = getRecords();
     if (!tableBody) return;
 
     tableBody.innerHTML = "";
 
-    if (records.length === 0) {
+    let list = records;
+    if (activeRegex) {
+      // Filter by description or category match
+      list = records.filter((r) =>
+        activeRegex.test(String(r.description)) || activeRegex.test(String(r.category))
+      );
+    }
+
+    if (list.length === 0) {
       tableBody.innerHTML = `<tr><td colspan="5">No records found.</td></tr>`;
       return;
     }
 
-    records.forEach((record, index) => {
+    list.forEach((record) => {
       const row = document.createElement("tr");
+      const descHtml = activeRegex
+        ? highlightMatches(record.description, activeRegex)
+        : escapeHtml(record.description);
+      const catHtml = activeRegex
+        ? highlightMatches(record.category, activeRegex)
+        : escapeHtml(record.category);
+
       row.innerHTML = `
-        <td>${escapeHtml(record.description)}</td>
+        <td>${descHtml}</td>
         <td>$${record.amount}</td>
-        <td>${escapeHtml(record.category)}</td>
+        <td>${catHtml}</td>
         <td>${record.date}</td>
-        <td><button class="delete-btn" data-index="${index}">Delete</button></td>
+        <td><button class="delete-btn" data-id="${record.id}">Delete</button></td>
       `;
       tableBody.appendChild(row);
     });
@@ -119,6 +154,9 @@ const rate1Input = document.getElementById("rate1");
 const rate2Input = document.getElementById("rate2");
 
 // Only run if settings elements exist
+const settingsForm = document.getElementById("settings-form");
+const settingsStatus = document.getElementById("settings-status");
+
 if (baseCurrencyInput && rate1Input && rate2Input) {
   // Load settings from localStorage on startup
   const savedSettings = JSON.parse(localStorage.getItem("settings"));
@@ -128,18 +166,22 @@ if (baseCurrencyInput && rate1Input && rate2Input) {
     rate2Input.value = savedSettings.rate2 || "";
   }
 
-  // Save settings when user changes any input
-  [baseCurrencyInput, rate1Input, rate2Input].forEach(input => {
-    input.addEventListener("change", () => {
+  if (settingsForm) {
+    settingsForm.addEventListener("submit", (e) => {
+      e.preventDefault();
       const settings = {
         baseCurrency: baseCurrencyInput.value.trim(),
         rate1: parseFloat(rate1Input.value) || 1,
         rate2: parseFloat(rate2Input.value) || 1,
       };
       localStorage.setItem("settings", JSON.stringify(settings));
-      alert("✅ Settings saved successfully!");
+      if (settingsStatus) {
+        settingsStatus.textContent = "✓ Settings saved";
+        settingsStatus.style.color = "green";
+        setTimeout(() => (settingsStatus.textContent = ""), 2000);
+      }
     });
-  });
+  }
 }
 
   function renderChart(records) {
@@ -186,7 +228,8 @@ if (baseCurrencyInput && rate1Input && rate2Input) {
   }
 
   function refreshAll() {
-    renderRecords();
+    const activeRegex = getActiveRegex();
+    renderRecords(activeRegex);
     renderSummary();
     renderBudget();
   }
@@ -197,16 +240,32 @@ if (baseCurrencyInput && rate1Input && rate2Input) {
   // --- DELETE FUNCTIONALITY --- //
   if (tableBody) {
     tableBody.addEventListener("click", (e) => {
-      if (e.target.classList.contains("delete-btn")) {
-        const idx = Number(e.target.dataset.index);
-        const records = getRecords();
-        const recordToDelete = records[idx];
-        if (recordToDelete) {
-          deleteRecord(recordToDelete.id);
+      const target = e.target;
+      if (target && target.classList && target.classList.contains("delete-btn")) {
+        const id = target.dataset.id;
+        if (id) {
+          deleteRecord(id);
           refreshAll();
-          console.log("Record deleted ❌:", recordToDelete.id);
+          console.log("Record deleted ❌:", id);
         }
       }
+    });
+  }
+
+  // --- SEARCH & CASE TOGGLE EVENTS --- //
+  if (searchInput) {
+    searchInput.addEventListener("input", () => {
+      refreshAll();
+    });
+  }
+
+  if (caseToggleBtn) {
+    updateCaseToggleUI();
+    caseToggleBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      caseSensitive = !caseSensitive;
+      updateCaseToggleUI();
+      refreshAll();
     });
   }
 
