@@ -3,7 +3,7 @@ import {
   DESC_PATTERN, 
   AMOUNT_PATTERN, 
   DATE_PATTERN,
-  validateField 
+  validateField, 
 } from "./regex.js";
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -324,5 +324,67 @@ form.addEventListener("submit", (e) => {
   // Clear success message after 3 seconds
   setTimeout(() => (formStatus.textContent = ""), 3000);
 });
+
+// ==========================
+// SEARCH FUNCTIONALITY
+// ==========================
+const searchInput = document.getElementById("search");
+const searchButton = document.getElementById("search-btn");
+
+function renderFilteredRecords(query) {
+  const allRecords = getRecords();
+  const tableBody = document.querySelector(".records-table tbody"); // use the global one safely
+
+  if (!tableBody) return;
+  if (!query.trim()) {
+    renderRecords(); // show all
+    return;
+  }
+
+  let regex;
+  try {
+    regex = new RegExp(query, "i"); // allows regex (case-insensitive)
+  } catch (e) {
+    alert("Invalid regular expression. Please check your syntax.");
+    return;
+  }
+
+  const filtered = allRecords.filter(record =>
+    regex.test(record.description) ||
+    regex.test(record.category) ||
+    regex.test(record.amount.toString()) ||
+    regex.test(record.date)
+  );
+
+  tableBody.innerHTML = "";
+
+  if (filtered.length === 0) {
+    tableBody.innerHTML = `<tr><td colspan="5">No matching transactions found.</td></tr>`;
+    return;
+  }
+
+  filtered.forEach((record, index) => {
+    const row = document.createElement("tr");
+    row.innerHTML = `
+      <td>${record.description}</td>
+      <td>$${record.amount}</td>
+      <td>${record.category}</td>
+      <td>${record.date}</td>
+      <td><button class="delete-btn" data-index="${index}">Delete</button></td>
+    `;
+    tableBody.appendChild(row);
+  });
+}
+
+if (searchInput && searchButton) {
+  searchButton.addEventListener("click", () => {
+    renderFilteredRecords(searchInput.value);
+  });
+
+  // Optional: instant search as you type
+  searchInput.addEventListener("input", () => {
+    renderFilteredRecords(searchInput.value);
+  });
+}
 
 });

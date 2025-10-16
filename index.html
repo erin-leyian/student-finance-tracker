@@ -61,10 +61,10 @@
                         <p id="top-category">N/A</p>
                  </div>
 
-                 <div class="card">
-                    <h3>Last 7 Days</h3>
-                    <p id="trend"> 0 entries </p>
-                 </div>
+      <div class="card">
+        <h3>Last 7 Days</h3>
+        <div id="chart" aria-label="Last 7 days spending chart"></div>
+      </div>
                 </div>
 
                 <div style="text-align: center; margin-top: 20px;">
@@ -80,8 +80,8 @@
 
                 <div class="search-bar">
                   <label for="search">Search (Regular Expressions allowed):</label>
-                  <input type="text" id="search" placeholder="e.g. coffee|book|fee">
-                  <button id="case-toggle">Aa</button>
+                  <input type="text" id="search-input" placeholder="e.g. coffee|book|fee">
+                  <button id="search-btn">Search</button>
                 </div>
 
                 <table class="records-table">
@@ -146,5 +146,7 @@
 </footer>
 
 <script src="scripts/app.js" type="module"></script>
+<script src="scripts/animations.js"></script>
+
     </body>
 </html>
