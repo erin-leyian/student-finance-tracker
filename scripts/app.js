@@ -21,7 +21,40 @@ document.addEventListener("DOMContentLoaded", () => {
       .replaceAll("'", "&#039;");
   }
 
-  // --- RENDER FUNCTIONS --- //
+  // ==========================
+  // CURRENCY FUNCTIONS (DEFINE ONCE)
+  // ==========================
+  
+  // Load settings with defaults
+  function loadSettings() {
+    const savedSettings = JSON.parse(localStorage.getItem("settings")) || {};
+    return {
+      baseCurrency: savedSettings.baseCurrency || "USD",
+      rate1: savedSettings.rate1 || 1,
+      rate2: savedSettings.rate2 || 1,
+    };
+  }
+
+  // Get currency symbol
+  function getCurrencySymbol(currencyCode) {
+    const symbols = {
+      USD: '$',
+      RWF: 'FRw',
+      KES: 'KSh'
+    };
+    return symbols[currencyCode.toUpperCase()] || '$';
+  }
+
+  // Format amount with currency
+  function formatCurrency(amount, currency = "USD") {
+    const symbol = getCurrencySymbol(currency);
+    return `${symbol}${Number(amount).toFixed(2)}`;
+  }
+
+  // ==========================
+  // RENDER FUNCTIONS
+  // ==========================
+  
   function renderRecords() {
     const records = getRecords();
     if (!tableBody) return;
@@ -33,11 +66,13 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    const settings = loadSettings();
+    
     records.forEach((record, index) => {
       const row = document.createElement("tr");
       row.innerHTML = `
         <td>${escapeHtml(record.description)}</td>
-        <td>$${record.amount.toFixed(2)}</td>
+        <td>${formatCurrency(record.amount, settings.baseCurrency)}</td>
         <td>${escapeHtml(record.category)}</td>
         <td>${record.date}</td>
         <td><button class="delete-btn" data-index="${index}">Delete</button></td>
@@ -49,9 +84,10 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderSummary() {
     const records = getRecords();
     const total = records.reduce((s, r) => s + Number(r.amount || 0), 0);
+    const settings = loadSettings();
 
     const totalEl = document.getElementById("total-spent");
-    if (totalEl) totalEl.textContent = `$${total.toFixed(2)}`;
+    if (totalEl) totalEl.textContent = formatCurrency(total, settings.baseCurrency);
 
     const catTotals = {};
     records.forEach(r => {
@@ -83,11 +119,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const records = getRecords();
     const spent = records.reduce((sum, r) => sum + Number(r.amount || 0), 0);
     const remaining = budget - spent;
+    const settings = loadSettings();
 
-    budgetValue.textContent = `$${budget.toFixed(2)}`;
-    spentValue.textContent = `$${spent.toFixed(2)}`;
-    remainingValue.textContent = `$${remaining.toFixed(2)}`;
-
+    budgetValue.textContent = formatCurrency(budget, settings.baseCurrency);
+    spentValue.textContent = formatCurrency(spent, settings.baseCurrency);
+    remainingValue.textContent = formatCurrency(remaining, settings.baseCurrency);
+    
     if (remaining < 0) {
       remainingValue.style.color = "red";
     } else {
@@ -104,34 +141,6 @@ document.addEventListener("DOMContentLoaded", () => {
       budgetInput.value = "";
     });
     renderBudget();
-  }
-
-  // ==========================
-  // SETTINGS FUNCTIONALITY
-  // ==========================
-  const baseCurrencyInput = document.getElementById("base-currency");
-  const rate1Input = document.getElementById("rate1");
-  const rate2Input = document.getElementById("rate2");
-
-  if (baseCurrencyInput && rate1Input && rate2Input) {
-    const savedSettings = JSON.parse(localStorage.getItem("settings"));
-    if (savedSettings) {
-      baseCurrencyInput.value = savedSettings.baseCurrency || "";
-      rate1Input.value = savedSettings.rate1 || "";
-      rate2Input.value = savedSettings.rate2 || "";
-    }
-
-    [baseCurrencyInput, rate1Input, rate2Input].forEach(input => {
-      input.addEventListener("change", () => {
-        const settings = {
-          baseCurrency: baseCurrencyInput.value.trim(),
-          rate1: parseFloat(rate1Input.value) || 1,
-          rate2: parseFloat(rate2Input.value) || 1,
-        };
-        localStorage.setItem("settings", JSON.stringify(settings));
-        alert("✅ Settings saved successfully!");
-      });
-    });
   }
 
   function renderChart(records) {
@@ -160,13 +169,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const chart = document.createElement("div");
     chart.className = "bar-chart";
 
+    const settings = loadSettings();
+
     Object.entries(totalsByDate).forEach(([date, amount]) => {
       const barWrap = document.createElement("div");
       barWrap.className = "bar-wrap";
       const bar = document.createElement("div");
       bar.className = "bar";
       bar.style.height = `${Math.max(4, amount * 0.25)}px`;
-      bar.title = `$${amount.toFixed(2)} on ${date}`;
+      bar.title = `${formatCurrency(amount, settings.baseCurrency)} on ${date}`;
       const label = document.createElement("div");
       label.className = "bar-label";
       label.textContent = date.slice(5);
@@ -203,6 +214,100 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ==========================
+  // SETTINGS FUNCTIONALITY
+  // ==========================
+  const baseCurrencyInput = document.getElementById("base-currency");
+  const rate1Input = document.getElementById("rate1");
+  const rate2Input = document.getElementById("rate2");
+  const settingsForm = document.getElementById("settings-form");
+  const settingsStatus = document.getElementById("settings-status");
+
+  // Validate currency input
+  function validateCurrency(input) {
+    const value = input.value.trim().toUpperCase();
+    const isValid = /^(USD|RWF|KES)$/.test(value);
+    
+    if (!isValid && value !== "") {
+      input.style.borderColor = "red";
+      if (settingsStatus) {
+        settingsStatus.textContent = "❌ Invalid currency. Use USD, RWF, or KES only.";
+        settingsStatus.style.color = "red";
+      }
+      return false;
+    }
+    
+    input.style.borderColor = "green";
+    if (settingsStatus) {
+      settingsStatus.textContent = "";
+    }
+    return true;
+  }
+
+  // Update ALL currency displays in the app
+  function updateAllCurrencyDisplays() {
+    const settings = loadSettings();
+    console.log(`Updating currency displays to: ${settings.baseCurrency}`);
+    
+    // Refresh everything to ensure consistency
+    refreshAll();
+  }
+
+  // Initialize settings
+  if (baseCurrencyInput && rate1Input && rate2Input && settingsForm) {
+    // Load saved settings
+    const settings = loadSettings();
+    baseCurrencyInput.value = settings.baseCurrency;
+    rate1Input.value = settings.rate1;
+    rate2Input.value = settings.rate2;
+    
+    // Apply current currency on page load
+    updateAllCurrencyDisplays();
+
+    // Currency validation on input
+    baseCurrencyInput.addEventListener("input", () => {
+      validateCurrency(baseCurrencyInput);
+    });
+
+    // Save settings with form submission
+    settingsForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      
+      // Validate currency
+      if (!validateCurrency(baseCurrencyInput)) {
+        return;
+      }
+      
+      const settings = {
+        baseCurrency: baseCurrencyInput.value.trim().toUpperCase(),
+        rate1: parseFloat(rate1Input.value) || 1,
+        rate2: parseFloat(rate2Input.value) || 1,
+      };
+      
+      localStorage.setItem("settings", JSON.stringify(settings));
+      
+      if (settingsStatus) {
+        settingsStatus.textContent = "✅ Settings saved successfully! Currency updated across the app.";
+        settingsStatus.style.color = "green";
+      }
+      
+      // Update ALL currency displays
+      updateAllCurrencyDisplays();
+      
+      // Clear status after 3 seconds
+      setTimeout(() => {
+        if (settingsStatus) settingsStatus.textContent = "";
+      }, 3000);
+    });
+
+    // Also save on individual input changes (optional)
+    [rate1Input, rate2Input].forEach(input => {
+      input.addEventListener("change", () => {
+        settingsForm.dispatchEvent(new Event('submit'));
+      });
+    });
+  }
+
+  // ==========================
   // FORM VALIDATION (ONLY ON ADD.HTML)
   // ==========================
   const form = document.getElementById("transaction-form");
@@ -224,8 +329,6 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error("Some form inputs are missing!");
       return;
     }
-
-    console.log("All form elements found ✓");
 
     // Input validation listeners
     descInput.addEventListener("input", () => {
@@ -254,16 +357,11 @@ document.addEventListener("DOMContentLoaded", () => {
     // --- SUBMIT HANDLER --- //
     form.addEventListener("submit", (e) => {
       e.preventDefault();
-      console.log("🔍 Form submitted - validating all fields...");
 
       const validDesc = validateField(descInput, DESC_PATTERN, descMsg, "Invalid description.");
       const validAmt = validateField(amountInput, AMOUNT_PATTERN, amountMsg, "Invalid amount.");
       const validCat = categoryInput.value !== "";
       const validDate = validateField(dateInput, DATE_PATTERN, dateMsg, "Invalid date.");
-
-      console.log(
-        `✅ Validation check → Desc: ${validDesc}, Amt: ${validAmt}, Cat: ${validCat}, Date: ${validDate}`
-      );
 
       if (!validDesc || !validAmt || !validCat || !validDate) {
         if (!validDesc && descMsg) descMsg.textContent = "Description is required.";
@@ -284,8 +382,6 @@ document.addEventListener("DOMContentLoaded", () => {
         category: categoryInput.value,
         date: dateInput.value,
       };
-
-      console.log("🧩 Saving new record:", newRecord);
 
       addRecord(newRecord);
       refreshAll();
@@ -309,21 +405,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const searchInput = document.getElementById("search-input");
   const searchButton = document.getElementById("search-btn");
 
-  console.log("Search setup:", {
-    searchInput: searchInput ? "FOUND" : "NOT FOUND",
-    searchButton: searchButton ? "FOUND" : "NOT FOUND"
-  });
-
   function renderFilteredRecords(query) {
-    console.log("🔍 Search called with query:", query);
-    
     const allRecords = getRecords();
     const tableBody = document.querySelector(".records-table tbody");
 
     if (!tableBody) return;
     
     if (!query.trim()) {
-      console.log("Empty query - showing all records");
       renderRecords();
       return;
     }
@@ -331,9 +419,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let regex;
     try {
       regex = new RegExp(query, "i");
-      console.log("Regex created:", regex);
     } catch (e) {
-      console.log("Regex error:", e);
       alert("Invalid regular expression. Please check your syntax.");
       renderRecords();
       return;
@@ -347,8 +433,6 @@ document.addEventListener("DOMContentLoaded", () => {
       return matches;
     });
 
-    console.log("Found matches:", filtered.length);
-
     tableBody.innerHTML = "";
 
     if (filtered.length === 0) {
@@ -356,12 +440,14 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
+    const settings = loadSettings();
+
     filtered.forEach((record, index) => {
       const originalIndex = allRecords.findIndex(r => r.id === record.id);
       const row = document.createElement("tr");
       row.innerHTML = `
         <td>${escapeHtml(record.description)}</td>
-        <td>$${record.amount.toFixed(2)}</td>
+        <td>${formatCurrency(record.amount, settings.baseCurrency)}</td>
         <td>${escapeHtml(record.category)}</td>
         <td>${record.date}</td>
         <td><button class="delete-btn" data-index="${originalIndex}">Delete</button></td>
@@ -371,15 +457,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   if (searchInput && searchButton) {
-    console.log("Setting up search listeners");
-    
     searchButton.addEventListener("click", () => {
-      console.log("Search button clicked");
       renderFilteredRecords(searchInput.value);
     });
 
     searchInput.addEventListener("input", () => {
-      console.log("Search input:", searchInput.value);
       renderFilteredRecords(searchInput.value);
     });
   }

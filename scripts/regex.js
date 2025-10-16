@@ -123,3 +123,20 @@ function escapeHtml(str) {
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
 }
+
+// Currency validation - only USD, RWF, KES allowed
+export const CURRENCY_PATTERN = /^(USD|RWF|KES)$/i;
+
+// Currency symbol mapping
+export const CURRENCY_SYMBOLS = {
+  USD: '$',
+  RWF: 'FRw',
+  KES: 'KSh'
+};
+
+// Currency names for display
+export const CURRENCY_NAMES = {
+  USD: 'US Dollar',
+  RWF: 'Rwandan Franc', 
+  KES: 'Kenyan Shilling'
+};
