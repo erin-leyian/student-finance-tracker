@@ -37,7 +37,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const row = document.createElement("tr");
       row.innerHTML = `
         <td>${escapeHtml(record.description)}</td>
-        <td>$${record.amount}</td>
+        <td>$${record.amount.toFixed(2)}</td>
         <td>${escapeHtml(record.category)}</td>
         <td>${record.date}</td>
         <td><button class="delete-btn" data-index="${index}">Delete</button></td>
@@ -68,79 +68,71 @@ document.addEventListener("DOMContentLoaded", () => {
     renderChart(records);
   }
    
-   // --- Budget Feature ---
-const budgetForm = document.getElementById("budget-form");
-const budgetInput = document.getElementById("budget-amount");
-const budgetValue = document.getElementById("budget-value");
-const spentValue = document.getElementById("spent-value");
-const remainingValue = document.getElementById("remaining-value");
+  // --- Budget Feature ---
+  const budgetForm = document.getElementById("budget-form");
+  const budgetInput = document.getElementById("budget-amount");
+  const budgetValue = document.getElementById("budget-value");
+  const spentValue = document.getElementById("spent-value");
+  const remainingValue = document.getElementById("remaining-value");
 
-let budget = Number(localStorage.getItem("budget") || 0);
+  let budget = Number(localStorage.getItem("budget") || 0);
 
-function renderBudget() {
-  if (!budgetValue || !spentValue || !remainingValue) return; // Exit if elements don't exist
-  
-  const records = getRecords();
-  const spent = records.reduce((sum, r) => sum + Number(r.amount || 0), 0);
-  const remaining = budget - spent;
+  function renderBudget() {
+    if (!budgetValue || !spentValue || !remainingValue) return;
+    
+    const records = getRecords();
+    const spent = records.reduce((sum, r) => sum + Number(r.amount || 0), 0);
+    const remaining = budget - spent;
 
-  budgetValue.textContent = `$${budget.toFixed(2)}`;
-  spentValue.textContent = `$${spent.toFixed(2)}`;
-  remainingValue.textContent = `$${remaining.toFixed(2)}`;
+    budgetValue.textContent = `$${budget.toFixed(2)}`;
+    spentValue.textContent = `$${spent.toFixed(2)}`;
+    remainingValue.textContent = `$${remaining.toFixed(2)}`;
 
-  if (remaining < 0) {
-    remainingValue.style.color = "red";
-  } else {
-    remainingValue.style.color = "green";
-  }
-}
-
-if (budgetForm && budgetInput) {
-budgetForm.addEventListener("submit", (e) => {
-  e.preventDefault();
-  budget = Number(budgetInput.value);
-  localStorage.setItem("budget", budget);
-  renderBudget();
-  budgetInput.value = "";
-});
-
-// Call it during page refresh
-renderBudget();
-}
-
-// ==========================
-// SETTINGS FUNCTIONALITY
-// ==========================
-
-// Select input fields
-// Select input fields
-const baseCurrencyInput = document.getElementById("base-currency");
-const rate1Input = document.getElementById("rate1");
-const rate2Input = document.getElementById("rate2");
-
-// Only run if settings elements exist
-if (baseCurrencyInput && rate1Input && rate2Input) {
-  // Load settings from localStorage on startup
-  const savedSettings = JSON.parse(localStorage.getItem("settings"));
-  if (savedSettings) {
-    baseCurrencyInput.value = savedSettings.baseCurrency || "";
-    rate1Input.value = savedSettings.rate1 || "";
-    rate2Input.value = savedSettings.rate2 || "";
+    if (remaining < 0) {
+      remainingValue.style.color = "red";
+    } else {
+      remainingValue.style.color = "green";
+    }
   }
 
-  // Save settings when user changes any input
-  [baseCurrencyInput, rate1Input, rate2Input].forEach(input => {
-    input.addEventListener("change", () => {
-      const settings = {
-        baseCurrency: baseCurrencyInput.value.trim(),
-        rate1: parseFloat(rate1Input.value) || 1,
-        rate2: parseFloat(rate2Input.value) || 1,
-      };
-      localStorage.setItem("settings", JSON.stringify(settings));
-      alert("✅ Settings saved successfully!");
+  if (budgetForm && budgetInput) {
+    budgetForm.addEventListener("submit", (e) => {
+      e.preventDefault();
+      budget = Number(budgetInput.value);
+      localStorage.setItem("budget", budget);
+      renderBudget();
+      budgetInput.value = "";
     });
-  });
-}
+    renderBudget();
+  }
+
+  // ==========================
+  // SETTINGS FUNCTIONALITY
+  // ==========================
+  const baseCurrencyInput = document.getElementById("base-currency");
+  const rate1Input = document.getElementById("rate1");
+  const rate2Input = document.getElementById("rate2");
+
+  if (baseCurrencyInput && rate1Input && rate2Input) {
+    const savedSettings = JSON.parse(localStorage.getItem("settings"));
+    if (savedSettings) {
+      baseCurrencyInput.value = savedSettings.baseCurrency || "";
+      rate1Input.value = savedSettings.rate1 || "";
+      rate2Input.value = savedSettings.rate2 || "";
+    }
+
+    [baseCurrencyInput, rate1Input, rate2Input].forEach(input => {
+      input.addEventListener("change", () => {
+        const settings = {
+          baseCurrency: baseCurrencyInput.value.trim(),
+          rate1: parseFloat(rate1Input.value) || 1,
+          rate2: parseFloat(rate2Input.value) || 1,
+        };
+        localStorage.setItem("settings", JSON.stringify(settings));
+        alert("✅ Settings saved successfully!");
+      });
+    });
+  }
 
   function renderChart(records) {
     const chartContainer = document.getElementById("chart");
@@ -210,181 +202,185 @@ if (baseCurrencyInput && rate1Input && rate2Input) {
     });
   }
 
-  // --- FORM VALIDATION SETUP --- //
+  // ==========================
+  // FORM VALIDATION (ONLY ON ADD.HTML)
+  // ==========================
   const form = document.getElementById("transaction-form");
-  if (!form) {
-    console.log("No form found — skipping validation setup.");
-    return;
-  }
+  if (form) {
+    console.log("Setting up form validation...");
 
-  console.log("Setting up form validation...");
+    const descInput = document.getElementById("description");
+    const amountInput = document.getElementById("amount");
+    const categoryInput = document.getElementById("category");
+    const dateInput = document.getElementById("date");
 
-  const descInput = document.getElementById("description");
-  const amountInput = document.getElementById("amount");
-  const categoryInput = document.getElementById("category");
-  const dateInput = document.getElementById("date");
+    const descMsg = document.getElementById("description-msg");
+    const amountMsg = document.getElementById("amount-msg");
+    const categoryMsg = document.getElementById("category-msg");
+    const dateMsg = document.getElementById("date-msg");
+    const formStatus = document.getElementById("form-status");
 
-  const descMsg = document.getElementById("description-msg");
-  const amountMsg = document.getElementById("amount-msg");
-  const categoryMsg = document.getElementById("category-msg");
-  const dateMsg = document.getElementById("date-msg");
-  const formStatus = document.getElementById("form-status");
-
-  if (!descInput || !amountInput || !categoryInput || !dateInput) {
-    console.error("Some form inputs are missing!");
-    return;
-  }
-
-  console.log("All form elements found ✓");
-
-  // Input validation listeners
-  descInput.addEventListener("input", () => {
-    validateField(descInput, DESC_PATTERN, descMsg, "Invalid description.");
-  });
-  
-  amountInput.addEventListener("input", () => {
-    validateField(amountInput, AMOUNT_PATTERN, amountMsg, "Invalid amount.");
-  });
-
-  categoryInput.addEventListener("change", () => {
-    if (categoryInput.value) {
-      categoryMsg.textContent = "";
-      categoryInput.style.borderColor = "";
-    } else {
-      categoryMsg.textContent = "Please select a category.";
-      categoryMsg.style.color = "red";
-      categoryInput.style.borderColor = "red";
-    }
-  });
-
-  dateInput.addEventListener("input", () => {
-    validateField(dateInput, DATE_PATTERN, dateMsg, "Invalid date.");
-  });
-
-// --- SUBMIT HANDLER --- //
-form.addEventListener("submit", (e) => {
-  e.preventDefault();
-  console.log("🔍 Form submitted - validating all fields...");
-
-  console.log(
-    "Form values → desc:",
-    descInput?.value,
-    "| amt:",
-    amountInput?.value,
-    "| cat:",
-    categoryInput?.value,
-    "| date:",
-    dateInput?.value
-  );
-
-  const validDesc = validateField(descInput, DESC_PATTERN, descMsg, "Invalid description.");
-  const validAmt = validateField(amountInput, AMOUNT_PATTERN, amountMsg, "Invalid amount.");
-  const validCat = categoryInput.value !== "";
-  const validDate = validateField(dateInput, DATE_PATTERN, dateMsg, "Invalid date.");
-
-  console.log(
-    `✅ Validation check → Desc: ${validDesc}, Amt: ${validAmt}, Cat: ${validCat}, Date: ${validDate}`
-  );
-
-  // If any field is invalid, show the correct error message and stop form submission
-  if (!validDesc || !validAmt || !validCat || !validDate) {
-    if (!validDesc && descMsg) descMsg.textContent = "Description is required.";
-    if (!validAmt && amountMsg) amountMsg.textContent = "Amount is required.";
-    if (!validCat && categoryMsg) categoryMsg.textContent = "Category is required.";
-    if (!validDate && dateMsg) dateMsg.textContent = "Date is required.";
-
-    if (formStatus) {
-      formStatus.textContent = "⚠️ Please fix the highlighted errors.";
-      formStatus.style.color = "red";
+    if (!descInput || !amountInput || !categoryInput || !dateInput) {
+      console.error("Some form inputs are missing!");
+      return;
     }
 
-    return; // ⛔ stop here if invalid
+    console.log("All form elements found ✓");
+
+    // Input validation listeners
+    descInput.addEventListener("input", () => {
+      validateField(descInput, DESC_PATTERN, descMsg, "Invalid description.");
+    });
+    
+    amountInput.addEventListener("input", () => {
+      validateField(amountInput, AMOUNT_PATTERN, amountMsg, "Invalid amount.");
+    });
+
+    categoryInput.addEventListener("change", () => {
+      if (categoryInput.value) {
+        categoryMsg.textContent = "";
+        categoryInput.style.borderColor = "";
+      } else {
+        categoryMsg.textContent = "Please select a category.";
+        categoryMsg.style.color = "red";
+        categoryInput.style.borderColor = "red";
+      }
+    });
+
+    dateInput.addEventListener("input", () => {
+      validateField(dateInput, DATE_PATTERN, dateMsg, "Invalid date.");
+    });
+
+    // --- SUBMIT HANDLER --- //
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      console.log("🔍 Form submitted - validating all fields...");
+
+      const validDesc = validateField(descInput, DESC_PATTERN, descMsg, "Invalid description.");
+      const validAmt = validateField(amountInput, AMOUNT_PATTERN, amountMsg, "Invalid amount.");
+      const validCat = categoryInput.value !== "";
+      const validDate = validateField(dateInput, DATE_PATTERN, dateMsg, "Invalid date.");
+
+      console.log(
+        `✅ Validation check → Desc: ${validDesc}, Amt: ${validAmt}, Cat: ${validCat}, Date: ${validDate}`
+      );
+
+      if (!validDesc || !validAmt || !validCat || !validDate) {
+        if (!validDesc && descMsg) descMsg.textContent = "Description is required.";
+        if (!validAmt && amountMsg) amountMsg.textContent = "Amount is required.";
+        if (!validCat && categoryMsg) categoryMsg.textContent = "Category is required.";
+        if (!validDate && dateMsg) dateMsg.textContent = "Date is required.";
+
+        if (formStatus) {
+          formStatus.textContent = "⚠️ Please fix the highlighted errors.";
+          formStatus.style.color = "red";
+        }
+        return;
+      }
+
+      const newRecord = {
+        description: descInput.value.trim(),
+        amount: Number(amountInput.value),
+        category: categoryInput.value,
+        date: dateInput.value,
+      };
+
+      console.log("🧩 Saving new record:", newRecord);
+
+      addRecord(newRecord);
+      refreshAll();
+
+      if (formStatus) {
+        formStatus.textContent = "✓ Transaction saved successfully!";
+        formStatus.style.color = "green";
+      }
+
+      form.reset();
+
+      setTimeout(() => (formStatus.textContent = ""), 3000);
+    });
+  } else {
+    console.log("No form found — this is normal on pages like index.html");
   }
 
-  // ✅ All fields valid — continue saving
-  const newRecord = {
-    description: descInput.value.trim(),
-    amount: Number(amountInput.value),
-    category: categoryInput.value,
-    date: dateInput.value,
-  };
+  // ==========================
+  // SEARCH FUNCTIONALITY (WORKS ON ALL PAGES)
+  // ==========================
+  const searchInput = document.getElementById("search-input");
+  const searchButton = document.getElementById("search-btn");
 
-  console.log("🧩 Saving new record:", newRecord);
-
-  addRecord(newRecord);
-  refreshAll();
-
-  if (formStatus) {
-    formStatus.textContent = "✓ Transaction saved successfully!";
-    formStatus.style.color = "green";
-  }
-
-  form.reset();
-
-  // Clear success message after 3 seconds
-  setTimeout(() => (formStatus.textContent = ""), 3000);
-});
-
-// ==========================
-// SEARCH FUNCTIONALITY
-// ==========================
-const searchInput = document.getElementById("search");
-const searchButton = document.getElementById("search-btn");
-
-function renderFilteredRecords(query) {
-  const allRecords = getRecords();
-  const tableBody = document.querySelector(".records-table tbody"); // use the global one safely
-
-  if (!tableBody) return;
-  if (!query.trim()) {
-    renderRecords(); // show all
-    return;
-  }
-
-  let regex;
-  try {
-    regex = new RegExp(query, "i"); // allows regex (case-insensitive)
-  } catch (e) {
-    alert("Invalid regular expression. Please check your syntax.");
-    return;
-  }
-
-  const filtered = allRecords.filter(record =>
-    regex.test(record.description) ||
-    regex.test(record.category) ||
-    regex.test(record.amount.toString()) ||
-    regex.test(record.date)
-  );
-
-  tableBody.innerHTML = "";
-
-  if (filtered.length === 0) {
-    tableBody.innerHTML = `<tr><td colspan="5">No matching transactions found.</td></tr>`;
-    return;
-  }
-
-  filtered.forEach((record, index) => {
-    const row = document.createElement("tr");
-    row.innerHTML = `
-      <td>${record.description}</td>
-      <td>$${record.amount}</td>
-      <td>${record.category}</td>
-      <td>${record.date}</td>
-      <td><button class="delete-btn" data-index="${index}">Delete</button></td>
-    `;
-    tableBody.appendChild(row);
+  console.log("Search setup:", {
+    searchInput: searchInput ? "FOUND" : "NOT FOUND",
+    searchButton: searchButton ? "FOUND" : "NOT FOUND"
   });
-}
 
-if (searchInput && searchButton) {
-  searchButton.addEventListener("click", () => {
-    renderFilteredRecords(searchInput.value);
-  });
+  function renderFilteredRecords(query) {
+    console.log("🔍 Search called with query:", query);
+    
+    const allRecords = getRecords();
+    const tableBody = document.querySelector(".records-table tbody");
 
-  // Optional: instant search as you type
-  searchInput.addEventListener("input", () => {
-    renderFilteredRecords(searchInput.value);
-  });
-}
+    if (!tableBody) return;
+    
+    if (!query.trim()) {
+      console.log("Empty query - showing all records");
+      renderRecords();
+      return;
+    }
 
+    let regex;
+    try {
+      regex = new RegExp(query, "i");
+      console.log("Regex created:", regex);
+    } catch (e) {
+      console.log("Regex error:", e);
+      alert("Invalid regular expression. Please check your syntax.");
+      renderRecords();
+      return;
+    }
+
+    const filtered = allRecords.filter(record => {
+      const matches = regex.test(record.description) ||
+                     regex.test(record.category) ||
+                     regex.test(record.amount.toString()) ||
+                     regex.test(record.date);
+      return matches;
+    });
+
+    console.log("Found matches:", filtered.length);
+
+    tableBody.innerHTML = "";
+
+    if (filtered.length === 0) {
+      tableBody.innerHTML = `<tr><td colspan="5">No matching transactions found.</td></tr>`;
+      return;
+    }
+
+    filtered.forEach((record, index) => {
+      const originalIndex = allRecords.findIndex(r => r.id === record.id);
+      const row = document.createElement("tr");
+      row.innerHTML = `
+        <td>${escapeHtml(record.description)}</td>
+        <td>$${record.amount.toFixed(2)}</td>
+        <td>${escapeHtml(record.category)}</td>
+        <td>${record.date}</td>
+        <td><button class="delete-btn" data-index="${originalIndex}">Delete</button></td>
+      `;
+      tableBody.appendChild(row);
+    });
+  }
+
+  if (searchInput && searchButton) {
+    console.log("Setting up search listeners");
+    
+    searchButton.addEventListener("click", () => {
+      console.log("Search button clicked");
+      renderFilteredRecords(searchInput.value);
+    });
+
+    searchInput.addEventListener("input", () => {
+      console.log("Search input:", searchInput.value);
+      renderFilteredRecords(searchInput.value);
+    });
+  }
 });
