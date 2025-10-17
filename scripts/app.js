@@ -20,40 +20,68 @@ document.addEventListener("DOMContentLoaded", () => {
       .replaceAll('"', "&quot;")
       .replaceAll("'", "&#039;");
   }
-
-  // ==========================
-  // CURRENCY FUNCTIONS (DEFINE ONCE)
-  // ==========================
+  // CURRENCY FUNCTIONS
   
-  // Load settings with defaults
-  function loadSettings() {
-    const savedSettings = JSON.parse(localStorage.getItem("settings")) || {};
-    return {
-      baseCurrency: savedSettings.baseCurrency || "USD",
-      rate1: savedSettings.rate1 || 1,
-      rate2: savedSettings.rate2 || 1,
-    };
-  }
+// Load settings with defaults
+function loadSettings() {
+  const savedSettings = JSON.parse(localStorage.getItem("settings")) || {};
+  return {
+    baseCurrency: savedSettings.baseCurrency || "USD",
+    rate1: savedSettings.rate1 || 1400, // USD to RWF
+    rate2: savedSettings.rate2 || 150,  // USD to KES
+  };
+}
 
-  // Get currency symbol
-  function getCurrencySymbol(currencyCode) {
-    const symbols = {
-      USD: '$',
-      RWF: 'FRw',
-      KES: 'KSh'
-    };
-    return symbols[currencyCode.toUpperCase()] || '$';
-  }
+// Get currency symbol
+function getCurrencySymbol(currencyCode) {
+  const symbols = {
+    USD: '$',
+    RWF: 'Rwf',
+    KES: 'KSh'
+  };
+  return symbols[currencyCode.toUpperCase()] || '$';
+}
 
-  // Format amount with currency
-  function formatCurrency(amount, currency = "USD") {
-    const symbol = getCurrencySymbol(currency);
-    return `${symbol}${Number(amount).toFixed(2)}`;
+// Convert amount from USD (base storage) to display currency
+function convertCurrency(amountInUSD, targetCurrency) {
+  const settings = loadSettings();
+  
+  switch(targetCurrency.toUpperCase()) {
+    case 'USD':
+      return amountInUSD;
+    case 'RWF':
+      return amountInUSD * settings.rate1;
+    case 'KES':
+      return amountInUSD * settings.rate2;
+    default:
+      return amountInUSD;
   }
+}
 
-  // ==========================
+// Convert amount from any currency back to USD (for storage)
+function convertToUSD(amount, fromCurrency) {
+  const settings = loadSettings();
+  
+  switch(fromCurrency.toUpperCase()) {
+    case 'USD':
+      return amount;
+    case 'RWF':
+      return amount / settings.rate1;
+    case 'KES':
+      return amount / settings.rate2;
+    default:
+      return amount;
+  }
+}
+
+// Format amount with currency conversion
+function formatCurrency(amountInUSD, displayCurrency = "USD") {
+  const converted = convertCurrency(amountInUSD, displayCurrency);
+  const symbol = getCurrencySymbol(displayCurrency);
+  return `${symbol}${Number(converted).toFixed(2)}`;
+}
+  
   // RENDER FUNCTIONS
-  // ==========================
   
   function renderRecords() {
     const records = getRecords();
@@ -143,51 +171,72 @@ document.addEventListener("DOMContentLoaded", () => {
     renderBudget();
   }
 
-  function renderChart(records) {
-    const chartContainer = document.getElementById("chart");
-    if (!chartContainer) return;
+ function renderChart(records) {
+  const chartContainer = document.getElementById("chart");
+  if (!chartContainer) return;
 
-    const today = new Date();
-    const days = [];
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date(today);
-      d.setDate(today.getDate() - i);
-      days.push(d.toISOString().split("T")[0]);
-    }
-
-    const totalsByDate = {};
-    days.forEach(d => totalsByDate[d] = 0);
-
-    records.forEach(r => {
-      if (!r.date) return;
-      if (totalsByDate.hasOwnProperty(r.date)) {
-        totalsByDate[r.date] += Number(r.amount || 0);
-      }
-    });
-
-    chartContainer.innerHTML = "";
-    const chart = document.createElement("div");
-    chart.className = "bar-chart";
-
-    const settings = loadSettings();
-
-    Object.entries(totalsByDate).forEach(([date, amount]) => {
-      const barWrap = document.createElement("div");
-      barWrap.className = "bar-wrap";
-      const bar = document.createElement("div");
-      bar.className = "bar";
-      bar.style.height = `${Math.max(4, amount * 0.25)}px`;
-      bar.title = `${formatCurrency(amount, settings.baseCurrency)} on ${date}`;
-      const label = document.createElement("div");
-      label.className = "bar-label";
-      label.textContent = date.slice(5);
-      barWrap.appendChild(bar);
-      barWrap.appendChild(label);
-      chart.appendChild(barWrap);
-    });
-    chartContainer.appendChild(chart);
+  const today = new Date();
+  const days = [];
+  
+  // Generate last 7 days
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    days.push(d.toISOString().split("T")[0]);
   }
 
+  // Initialize totals for each day
+  const totalsByDate = {};
+  days.forEach(d => totalsByDate[d] = 0);
+
+  // Sum amounts for each day
+  records.forEach(r => {
+    if (!r.date) return;
+    if (totalsByDate.hasOwnProperty(r.date)) {
+      totalsByDate[r.date] += Number(r.amount || 0);
+    }
+  });
+
+  // Clear previous chart
+  chartContainer.innerHTML = "";
+
+  // Find max value for scaling
+  const maxAmount = Math.max(...Object.values(totalsByDate), 1);
+
+  // Create chart container
+  const chart = document.createElement("div");
+  chart.className = "bar-chart";
+
+  const settings = loadSettings();
+
+  // Create bars for each day
+  Object.entries(totalsByDate).forEach(([date, amount]) => {
+    const barWrap = document.createElement("div");
+    barWrap.className = "bar-wrap";
+    
+    const bar = document.createElement("div");
+    bar.className = "bar";
+    
+    // Scale bar height (min 4px, max 140px)
+    const heightPercentage = (amount / maxAmount) * 100;
+    const barHeight = Math.max(4, (heightPercentage / 100) * 140);
+    bar.style.height = `${barHeight}px`;
+    
+    // Tooltip
+    bar.title = `${formatCurrency(amount, settings.baseCurrency)} on ${date}`;
+    
+    // Date label (show month-day)
+    const label = document.createElement("div");
+    label.className = "bar-label";
+    label.textContent = date.slice(5); // MM-DD
+    
+    barWrap.appendChild(bar);
+    barWrap.appendChild(label);
+    chart.appendChild(barWrap);
+  });
+
+  chartContainer.appendChild(chart);
+}
   function refreshAll() {
     renderRecords();
     renderSummary();
@@ -213,99 +262,118 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // ==========================
   // SETTINGS FUNCTIONALITY
-  // ==========================
-  const baseCurrencyInput = document.getElementById("base-currency");
-  const rate1Input = document.getElementById("rate1");
-  const rate2Input = document.getElementById("rate2");
-  const settingsForm = document.getElementById("settings-form");
-  const settingsStatus = document.getElementById("settings-status");
 
-  // Validate currency input
-  function validateCurrency(input) {
-    const value = input.value.trim().toUpperCase();
-    const isValid = /^(USD|RWF|KES)$/.test(value);
-    
-    if (!isValid && value !== "") {
-      input.style.borderColor = "red";
-      if (settingsStatus) {
-        settingsStatus.textContent = "❌ Invalid currency. Use USD, RWF, or KES only.";
-        settingsStatus.style.color = "red";
-      }
-      return false;
-    }
-    
-    input.style.borderColor = "green";
+const baseCurrencyInput = document.getElementById("base-currency");
+const rate1Input = document.getElementById("rate1");
+const rate2Input = document.getElementById("rate2");
+const settingsForm = document.getElementById("settings-form");
+const settingsStatus = document.getElementById("settings-status");
+const ratePreview = document.getElementById("rate-preview");
+const previewText = document.getElementById("preview-text");
+
+// Validate currency input
+function validateCurrency(select) {
+  const value = select.value.trim().toUpperCase();
+  const isValid = /^(USD|RWF|KES)$/.test(value);
+  
+  if (!isValid) {
+    select.style.borderColor = "red";
     if (settingsStatus) {
-      settingsStatus.textContent = "";
+      settingsStatus.textContent = " Invalid currency. Use USD, RWF, or KES only.";
+      settingsStatus.style.color = "red";
     }
-    return true;
+    return false;
   }
-
-  // Update ALL currency displays in the app
-  function updateAllCurrencyDisplays() {
-    const settings = loadSettings();
-    console.log(`Updating currency displays to: ${settings.baseCurrency}`);
-    
-    // Refresh everything to ensure consistency
-    refreshAll();
+  
+  select.style.borderColor = "green";
+  if (settingsStatus) {
+    settingsStatus.textContent = "";
   }
+  return true;
+}
 
-  // Initialize settings
-  if (baseCurrencyInput && rate1Input && rate2Input && settingsForm) {
-    // Load saved settings
-    const settings = loadSettings();
-    baseCurrencyInput.value = settings.baseCurrency;
-    rate1Input.value = settings.rate1;
-    rate2Input.value = settings.rate2;
+// Update rate preview
+function updateRatePreview() {
+  if (!ratePreview || !previewText) return;
+  
+  const rate1 = parseFloat(rate1Input.value) || 1400;
+  const rate2 = parseFloat(rate2Input.value) || 150;
+  
+  previewText.innerHTML = `
+    1 USD = ${rate1} RWF<br>
+    1 USD = ${rate2} KES<br>
+    1 RWF = ${(1/rate1).toFixed(6)} USD<br>
+    1 KES = ${(1/rate2).toFixed(6)} USD
+  `;
+  
+  ratePreview.style.display = "block";
+}
+
+// Update ALL currency displays in the app
+function updateAllCurrencyDisplays() {
+  const settings = loadSettings();
+  console.log(`Updating currency displays to: ${settings.baseCurrency}`);
+  console.log(`Exchange rates - USD→RWF: ${settings.rate1}, USD→KES: ${settings.rate2}`);
+  
+  // Refresh everything to ensure consistency
+  refreshAll();
+}
+
+// Initialize settings
+if (baseCurrencyInput && rate1Input && rate2Input && settingsForm) {
+  // Load saved settings
+  const settings = loadSettings();
+  baseCurrencyInput.value = settings.baseCurrency;
+  rate1Input.value = settings.rate1;
+  rate2Input.value = settings.rate2;
+  
+  // Apply current currency on page load
+  updateAllCurrencyDisplays();
+  updateRatePreview();
+
+  // Currency validation on change
+  baseCurrencyInput.addEventListener("change", () => {
+    validateCurrency(baseCurrencyInput);
+    updateRatePreview();
+  });
+
+  // Update preview when rates change
+  rate1Input.addEventListener("input", updateRatePreview);
+  rate2Input.addEventListener("input", updateRatePreview);
+
+  // Save settings with form submission
+  settingsForm.addEventListener("submit", (e) => {
+    e.preventDefault();
     
-    // Apply current currency on page load
+    // Validate currency
+    if (!validateCurrency(baseCurrencyInput)) {
+      return;
+    }
+    
+    const settings = {
+      baseCurrency: baseCurrencyInput.value.trim().toUpperCase(),
+      rate1: parseFloat(rate1Input.value) || 1400,
+      rate2: parseFloat(rate2Input.value) || 150,
+    };
+    
+    localStorage.setItem("settings", JSON.stringify(settings));
+    
+    if (settingsStatus) {
+      settingsStatus.textContent = "✅ Settings saved! All amounts converted to " + settings.baseCurrency;
+      settingsStatus.style.color = "green";
+    }
+    
+    // Update ALL currency displays
     updateAllCurrencyDisplays();
-
-    // Currency validation on input
-    baseCurrencyInput.addEventListener("input", () => {
-      validateCurrency(baseCurrencyInput);
-    });
-
-    // Save settings with form submission
-    settingsForm.addEventListener("submit", (e) => {
-      e.preventDefault();
-      
-      // Validate currency
-      if (!validateCurrency(baseCurrencyInput)) {
-        return;
-      }
-      
-      const settings = {
-        baseCurrency: baseCurrencyInput.value.trim().toUpperCase(),
-        rate1: parseFloat(rate1Input.value) || 1,
-        rate2: parseFloat(rate2Input.value) || 1,
-      };
-      
-      localStorage.setItem("settings", JSON.stringify(settings));
-      
-      if (settingsStatus) {
-        settingsStatus.textContent = "✅ Settings saved successfully! Currency updated across the app.";
-        settingsStatus.style.color = "green";
-      }
-      
-      // Update ALL currency displays
-      updateAllCurrencyDisplays();
-      
-      // Clear status after 3 seconds
-      setTimeout(() => {
-        if (settingsStatus) settingsStatus.textContent = "";
-      }, 3000);
-    });
-
-    // Also save on individual input changes (optional)
-    [rate1Input, rate2Input].forEach(input => {
-      input.addEventListener("change", () => {
-        settingsForm.dispatchEvent(new Event('submit'));
-      });
-    });
-  }
+    updateRatePreview();
+    
+    // Clear status after 4 seconds
+    setTimeout(() => {
+      if (settingsStatus) settingsStatus.textContent = "";
+    }, 4000);
+  });
+}
 
   // ==========================
   // FORM VALIDATION (ONLY ON ADD.HTML)

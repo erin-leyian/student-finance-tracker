@@ -106,21 +106,29 @@
   <h2 id="settings-title">Settings</h2>
   <form id="settings-form">
     <label for="base-currency">Base Currency:</label>
-    <input
-      type="text"
-      id="base-currency"
-      placeholder="e.g. USD, RWF, KES"
-    />
+    <select id="base-currency">
+      <option value="USD">USD - US Dollar</option>
+      <option value="RWF">RWF - Rwandan Franc</option>
+      <option value="KES">KES - Kenyan Shilling</option>
+    </select>
 
-    <label for="rate1">Exchange Rate 1:</label>
-    <input type="number" id="rate1" placeholder="e.g. 1.2" step="0.01" />
+    <label for="rate1">Exchange Rate (USD → RWF):</label>
+    <input type="number" id="rate1" placeholder="e.g. 1400" step="0.01" />
+    <small style="color: #666;">1 USD = ? RWF</small>
 
-    <label for="rate2">Exchange Rate 2:</label>
-    <input type="number" id="rate2" placeholder="e.g. 0.9" step="0.01" />
+    <label for="rate2">Exchange Rate (USD → KES):</label>
+    <input type="number" id="rate2" placeholder="e.g. 150" step="0.01" />
+    <small style="color: #666;">1 USD = ? KES</small>
 
     <button type="submit" id="save-settings">Save Settings</button>
   </form>
   <p id="settings-status"></p>
+  
+  <!-- Exchange Rate Preview -->
+  <div id="rate-preview" style="margin-top: 15px; padding: 10px; background: #f0f9f4; border-radius: 8px; display: none;">
+    <strong>Current Rates:</strong><br>
+    <span id="preview-text"></span>
+  </div>
 </section>
 
 <section id="about" aria-labelledby="about-title">
