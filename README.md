@@ -57,6 +57,14 @@ The interface uses a **calm, success-driven Emerald Green and Cream White palett
 ## 🧪 How to Run & Test
 
 1. **Clone the repository**
-   ```bash
+   `bash
    git clone https://github.com/erin-leyian/student-finance-tracker.git
    cd student-finance-tracker
+
+   ## 🚀 Deployment
+
+The application has been successfully deployed on **GitHub Pages**.
+
+- **Live URL:**  https://erin-leyian.github.io/student-finance-tracker/
+- All pages and features work correctly in the deployed version.
+
