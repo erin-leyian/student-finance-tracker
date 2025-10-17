@@ -69,3 +69,5 @@ The application has been successfully deployed on **GitHub Pages**.
 - All pages and features work correctly in the deployed version.
 
 Demo Video link : https://www.canva.com/design/DAG2EKTSvTU/OeG41_vxpXUS1usmvYRnNA/edit?utm_content=DAG2EKTSvTU&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton
+
+wireframe : https://qrr.to/931cbeab
