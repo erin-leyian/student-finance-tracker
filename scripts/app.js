@@ -256,7 +256,7 @@ function formatCurrency(amountInUSD, displayCurrency = "USD") {
         if (recordToDelete) {
           deleteRecord(recordToDelete.id);
           refreshAll();
-          console.log("Record deleted ❌:", recordToDelete.id);
+          console.log("Record deleted :", recordToDelete.id);
         }
       }
     });
@@ -438,7 +438,7 @@ if (baseCurrencyInput && rate1Input && rate2Input && settingsForm) {
         if (!validDate && dateMsg) dateMsg.textContent = "Date is required.";
 
         if (formStatus) {
-          formStatus.textContent = "⚠️ Please fix the highlighted errors.";
+          formStatus.textContent = "Please fix the highlighted errors.";
           formStatus.style.color = "red";
         }
         return;

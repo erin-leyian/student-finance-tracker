@@ -264,9 +264,6 @@ section.visible, .card.visible {
   transform: translateY(0);
 }
 
-/* ===========================
-   🌿 Mobile-first Responsive
-   =========================== */
 
 /* Base: ≤ 360px */
 body {
